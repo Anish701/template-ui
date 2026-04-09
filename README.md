@@ -36,6 +36,10 @@ A modern React-based frontend application with Fastify backend for interacting w
 
 The application will be available at `http://localhost:5173`
 
+## Cluster deployment (with template-agent)
+
+Deploy this UI in the **same namespace** as the per-agent **template-agent** workload. Set **`AGENT_HOST`** (see `env.template`) to the agent Service URL — for example the in-cluster DNS name and port your deployer exposes (defaults to port `5002` for the template agent). The Fastify BFF proxies chat to `${AGENT_HOST}/v1/stream` and history to `${AGENT_HOST}/v1/history/{threadId}`.
+
 ## 📦 Available Scripts
 
 | Command | Description |

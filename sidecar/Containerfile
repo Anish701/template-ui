@@ -1,0 +1,19 @@
+# Build from repository root: template-ui/
+#   podman build -f sidecar/Containerfile -t ai-template-ui-sidecar:latest .
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build:client
+
+FROM nginx:1.27-alpine
+RUN apk add --no-cache gettext
+COPY sidecar/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY sidecar/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+COPY sidecar/index.html /usr/share/nginx/html/index.html
+COPY --from=builder /app/dist/frontend/main.umd.js /usr/share/nginx/html/main.umd.js
+COPY --from=builder /app/dist/frontend/template-ui.css /usr/share/nginx/html/template-ui.css
+EXPOSE 8080
+ENTRYPOINT ["/docker-entrypoint.sh"]
