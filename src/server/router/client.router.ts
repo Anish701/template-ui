@@ -3,9 +3,11 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import authCheckPlugin from "../plugins/auth-check.plugin.js";
 import { agentHost } from "../utils/config.js";
 
+const apiBasePath = process.env.API_BASE_PATH || "/api";
+
 const appData = {
-  apiUrl: agentHost, // Agent backend URL - frontend calls agent directly
-  refreshableToken: "", // Unused - token comes from USER_DATA.accessToken
+  apiUrl: apiBasePath,
+  refreshableToken: "",
 };
 
 async function routes(fastify: FastifyInstance) {

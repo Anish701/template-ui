@@ -99,6 +99,31 @@ export async function handleStreamPost(fastify: FastifyInstance, request: Fastif
   }
 }
 
+export async function handleThreadsGet(
+  fastify: FastifyInstance,
+  request: FastifyRequest<{ Params: { userId: string } }>,
+  reply: FastifyReply,
+) {
+  const { userId } = request.params;
+  const accessToken = request.session?.token?.access_token;
+
+  try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (accessToken) headers["X-Token"] = accessToken;
+
+    const agentResponse = await fetch(`${agentHost}/v1/threads/${userId}`, { method: "GET", headers });
+
+    if (!agentResponse.ok) {
+      return reply.status(agentResponse.status).send({ error: "Failed to fetch threads", status: agentResponse.status });
+    }
+
+    reply.send(await agentResponse.json());
+  } catch (error) {
+    fastify.log.error(`Error proxying threads: ${error}`);
+    reply.status(500).send({ error: "Failed to connect to agent service", message: String(error) });
+  }
+}
+
 export async function handleHistoryGet(fastify: FastifyInstance, request: FastifyRequest<{ Params: { threadId: string } }>, reply: FastifyReply) {
   const { threadId } = request.params;
   
