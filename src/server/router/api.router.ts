@@ -14,11 +14,11 @@ async function apiRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post("/v1/stream", async (request: FastifyRequest<{ Body: StreamRequest }>, reply: FastifyReply) => {
-   handleStreamPost(fastify, request, reply);
+    await handleStreamPost(fastify, request, reply);
   });
 
   fastify.get("/v1/history/:threadId", async (request: FastifyRequest<{ Params: { threadId: string } }>, reply: FastifyReply) => {
-    handleHistoryGet(fastify, request, reply);
+    await handleHistoryGet(fastify, request, reply);
   });
 }
 
