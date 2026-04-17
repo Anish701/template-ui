@@ -3,9 +3,6 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import authCheckPlugin from "../plugins/auth-check.plugin.js";
 import { basePath, apiBasePath } from "../utils/config.js";
 
-// basePath    = BASE_PATH     e.g. "/{org}/{name}"      — BrowserRouter basename
-// apiBasePath = API_BASE_PATH e.g. "/{org}/{name}/chat" — prefix for fetch calls
-// Both are "" in subdomain mode (UI served from the root host).
 const appData = {
   apiUrl: apiBasePath ? `${apiBasePath}/api` : "/api",
   basePath,

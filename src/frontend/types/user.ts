@@ -18,7 +18,6 @@ export interface UserData {
 
 export interface AppData {
   apiUrl: string;
-  /** Path prefix when the UI is mounted at /{org}/{name}/chat (empty in subdomain mode). */
   basePath: string;
   refreshableToken: string;
 }
