@@ -3,8 +3,10 @@ import { BrowserRouter } from "react-router-dom";
 import "./global.css";
 import App from "./App.tsx";
 
+const basePath = window.APP_DATA?.basePath ?? "";
+
 createRoot(document.getElementById("root")!).render(
-    <BrowserRouter>
+    <BrowserRouter basename={basePath}>
       <App />
     </BrowserRouter>
 );
