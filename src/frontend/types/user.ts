@@ -18,6 +18,7 @@ export interface UserData {
 
 export interface AppData {
   apiUrl: string;
+  basePath: string;
   refreshableToken: string;
 }
 

@@ -19,6 +19,7 @@ export default function App() {
         <AppLayout>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/chat" element={<HomePage />} />
             <Route path="/chat/:threadId" element={<ChatRoutePage />} />
           </Routes>
         </AppLayout>

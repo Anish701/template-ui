@@ -1,9 +1,11 @@
 import * as path from "node:path";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import authCheckPlugin from "../plugins/auth-check.plugin.js";
+import { basePath, apiBasePath } from "../utils/config.js";
 
 const appData = {
-  apiUrl: "/api",
+  apiUrl: apiBasePath ? `${apiBasePath}/api` : "/api",
+  basePath,
   refreshableToken: "",
 };
 
