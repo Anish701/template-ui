@@ -1,6 +1,6 @@
 export interface UserData {
-  accessToken: string;
-  expiresAt: string;
+  accessToken?: string;
+  expiresAt?: string;
   cn: string;
   displayName: string;
   email: string;
@@ -19,7 +19,6 @@ export interface UserData {
 export interface AppData {
   apiUrl: string;
   basePath: string;
-  refreshableToken: string;
 }
 
 // Extend the Window interface to include USER_DATA and APP_DATA
