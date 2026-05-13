@@ -39,16 +39,17 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   const handleSelectChat = (chatId: string) => {
-    navigate(`/chat/${chatId}`);
+    navigate(`/${chatId}`);
   };
 
   const handleDeleteChat = (chatId: string) => {
     deleteChat(chatId);
     // Navigate to home if we're currently on the deleted chat
-    if (window.location.pathname === `/chat/${chatId}`) {
+    const basePath = window.APP_DATA?.basePath ?? "";
+    if (window.location.pathname === `${basePath}/${chatId}`) {
       const remainingChats = chats.filter(chat => chat.id !== chatId);
       if (remainingChats.length > 0) {
-        navigate(`/chat/${remainingChats[0].id}`);
+        navigate(`/${remainingChats[0].id}`);
       } else {
         navigate('/');
       }
