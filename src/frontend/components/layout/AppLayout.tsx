@@ -21,15 +21,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   
   // Extract user name and token expiry from real user data
   const userName = userData?.displayName || userData?.name || "User";
-  const tokenExpiry = useMemo(() => {
-    if (userData?.expiresAt) {
-      return new Date(userData.expiresAt);
-    }
-    // Fallback to mock expiry if no real data
-    const fallback = new Date();
-    fallback.setHours(fallback.getHours() + 2);
-    return fallback;
-  }, [userData?.expiresAt]);
 
   // Convert chats to sidebar format
   const sidebarChats: SidebarChatItem[] = useMemo(() => 
@@ -48,16 +39,17 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   const handleSelectChat = (chatId: string) => {
-    navigate(`/chat/${chatId}`);
+    navigate(`/${chatId}`);
   };
 
   const handleDeleteChat = (chatId: string) => {
     deleteChat(chatId);
     // Navigate to home if we're currently on the deleted chat
-    if (window.location.pathname === `/chat/${chatId}`) {
+    const basePath = window.APP_DATA?.basePath ?? "";
+    if (window.location.pathname === `${basePath}/${chatId}`) {
       const remainingChats = chats.filter(chat => chat.id !== chatId);
       if (remainingChats.length > 0) {
-        navigate(`/chat/${remainingChats[0].id}`);
+        navigate(`/${remainingChats[0].id}`);
       } else {
         navigate('/');
       }
@@ -76,7 +68,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           currentChatId={undefined} // No longer needed - sidebar will use URL
           chatHistory={sidebarChats}
           isCollapsed={sidebarCollapsed}
-          tokenExpiry={tokenExpiry}
           onToggleCollapse={handleToggleCollapse}
           onNewChat={createNewChat}
           onSelectChat={handleSelectChat}

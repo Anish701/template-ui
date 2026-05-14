@@ -146,7 +146,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
     dispatch({ type: 'SET_ERROR', payload: null });
 
     // Navigate to new chat
-    navigate(`/chat/${newChatId}`);
+    navigate(`/${newChatId}`);
 
     return newChatId;
   }, [navigate]);
