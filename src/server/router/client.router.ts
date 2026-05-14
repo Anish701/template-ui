@@ -30,7 +30,7 @@ function jwtExpiryMs(accessToken: string): number | undefined {
 }
 
 const appData = {
-  apiUrl: apiBasePath ? `${apiBasePath}/api` : "/api",
+  apiUrl: apiBasePath || "/api",
   basePath,
 };
 
