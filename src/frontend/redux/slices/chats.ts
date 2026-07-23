@@ -1,12 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Message } from '@langchain/langgraph-sdk';
 import type { SubAgentInfo, InterruptInfo, TaskStep } from '../../types/deep-agent';
+import type { StreamErrorKind } from '../../utils/errorHandler';
 
 export interface StreamingState {
   isLoading: boolean;
   isThinking: boolean;
   isConnected: boolean;
   error: string | null;
+  /** Semantic classification of the last stream error, used to show the right UX. */
+  errorKind: StreamErrorKind | null;
   currentRunId: string | null;
   activeSubAgent: SubAgentInfo | null;
   pendingInterrupt: InterruptInfo | null;
@@ -40,6 +43,7 @@ const DEFAULT_STREAMING_STATE: StreamingState = {
   isThinking: false,
   isConnected: false,
   error: null,
+  errorKind: null,
   currentRunId: null,
   activeSubAgent: null,
   pendingInterrupt: null,

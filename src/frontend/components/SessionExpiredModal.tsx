@@ -31,13 +31,13 @@ export function SessionExpiredModal({ isOpen }: Readonly<SessionExpiredModalProp
       <ModalHeader title="Session Expired" />
       <ModalBody>
         <p className="mb-3">
-          Your session has expired. Please log in again to continue.
+          Your session has expired. Please sign in again to continue.
         </p>
         <p className="text-muted-foreground text-sm">Your work has been saved.</p>
       </ModalBody>
       <ModalFooter>
         <Button variant="primary" onClick={goToLogin}>
-          Log In
+          Sign In
         </Button>
       </ModalFooter>
     </Modal>

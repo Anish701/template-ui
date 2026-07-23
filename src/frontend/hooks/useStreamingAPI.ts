@@ -20,6 +20,7 @@ import {
   updateStreamingState,
   type StreamingState,
 } from '@/redux/slices/chats';
+import { ErrorHandler } from '@/utils/errorHandler';
 import { chatStorage } from '@/services/chatStorage';
 import { buildAgentApiUrl } from '@/lib/app-paths';
 import { selectActiveRules, selectMemories } from '@/redux/slices/personalization';
@@ -308,6 +309,7 @@ export function useStreamingAPI(threadId: string) {
           state: {
             currentRunId: `run-${Date.now()}`,
             error: null,
+            errorKind: null,
             pendingInterrupt: null,
             taskSteps: [],
           },
@@ -466,17 +468,20 @@ export function useStreamingAPI(threadId: string) {
                     chatId: threadId,
                     state: {
                       error: null,
+                      errorKind: null,
                       isLoading: true,
                       isConnected: false,
                     },
                   }),
                 );
               } else {
+                const { kind, message: userMessage } = ErrorHandler.classifyStreamError(error);
                 dispatch(
                   updateStreamingState({
                     chatId: threadId,
                     state: {
-                      error: error.message,
+                      error: userMessage,
+                      errorKind: kind,
                       isLoading: false,
                       isConnected: false,
                       isReconnecting: false,
@@ -626,7 +631,7 @@ export function useStreamingAPI(threadId: string) {
       dispatch(
         updateStreamingState({
           chatId: threadId,
-          state: { currentRunId: `run-${Date.now()}`, error: null, taskSteps: [] },
+          state: { currentRunId: `run-${Date.now()}`, error: null, errorKind: null, taskSteps: [] },
         }),
       );
 
@@ -677,11 +682,13 @@ export function useStreamingAPI(threadId: string) {
           dispatch(updateStreamingState({ chatId: threadId, state: { pendingInterrupt: enrichInterrupt(interrupt) } }));
         },
         onError(error) {
+          const { kind, message: userMessage } = ErrorHandler.classifyStreamError(error);
           dispatch(
             updateStreamingState({
               chatId: threadId,
               state: {
-                error: error.message,
+                error: userMessage,
+                errorKind: kind,
                 isLoading: false,
                 isConnected: false,
                 pendingInterrupt: savedInterrupt,
@@ -787,10 +794,16 @@ export function useStreamingAPI(threadId: string) {
             );
           },
           onError(error) {
+            const { kind, message: userMessage } = ErrorHandler.classifyStreamError(error);
             dispatch(
               updateStreamingState({
                 chatId: threadId,
-                state: { error: error.message, isLoading: false, isConnected: false },
+                state: {
+                  error: userMessage,
+                  errorKind: kind,
+                  isLoading: false,
+                  isConnected: false,
+                },
               }),
             );
           },

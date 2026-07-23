@@ -8,8 +8,8 @@ import { ChatPage } from '../page-objects/ChatPage';
  * Rate-limit (429) tests:
  *
  *  1. When the stream endpoint returns 429, the input form shows a
- *     "Rate limited. Try again in Xs" alert and the submit button is disabled.
- *  2. The countdown text updates while the rate limit is active.
+ *     "You're sending messages too quickly" alert and the submit button is disabled.
+ *  2. The countdown seconds are shown in the wait button while the rate limit is active.
  */
 
 test.describe('Rate limit — 429 handling', () => {
@@ -29,9 +29,11 @@ test.describe('Rate limit — 429 handling', () => {
     const chat = new ChatPage(page);
     await chat.expectChatRoute();
 
-    // The InputForm renders <Alert title="Rate limited. Try again in Xs" />
+    // The InputForm renders <Alert title="You're sending messages too quickly. ..." />
     // Use the alert heading role to avoid matching user-message text bubbles
-    await expect(page.getByRole('heading', { name: /rate limited/i })).toBeVisible({ timeout: 15_000 });
+    await expect(
+      page.getByRole('heading', { name: /sending messages too quickly/i }),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   // ── Submit button is disabled ──────────────────────────────────────────────
@@ -45,7 +47,9 @@ test.describe('Rate limit — 429 handling', () => {
 
     const chat = new ChatPage(page);
     await chat.expectChatRoute();
-    await expect(page.getByRole('heading', { name: /rate limited/i })).toBeVisible({ timeout: 15_000 });
+    await expect(
+      page.getByRole('heading', { name: /sending messages too quickly/i }),
+    ).toBeVisible({ timeout: 15_000 });
 
     // During the retry backoff the stream is still active (cancel button visible),
     // which means the submit button is NOT rendered and new messages cannot be sent.
@@ -54,7 +58,7 @@ test.describe('Rate limit — 429 handling', () => {
 
   // ── Retry-After respected ──────────────────────────────────────────────────
 
-  test('shows the Retry-After seconds in the alert text', async ({ page }) => {
+  test('shows the Retry-After seconds in the wait button', async ({ page }) => {
     await mockRateLimitResponse(page, 10);
 
     const home = new HomePage(page);
@@ -64,8 +68,10 @@ test.describe('Rate limit — 429 handling', () => {
     const chat = new ChatPage(page);
     await chat.expectChatRoute();
 
-    // The alert heading "Rate limited. Try again in Xs" should mention the countdown
-    await expect(page.getByRole('heading', { name: /try again in \d+s/i })).toBeVisible({ timeout: 15_000 });
+    // Once the stream finishes (loading ends) the wait button appears with the countdown
+    await expect(page.getByRole('button', { name: /wait \d+ seconds/i })).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   // ── Normal flow unaffected ─────────────────────────────────────────────────
@@ -89,6 +95,8 @@ test.describe('Rate limit — 429 handling', () => {
     await chat.expectChatRoute();
     await chat.waitForAIResponse(15_000);
 
-    await expect(page.getByRole('heading', { name: /rate limited/i })).not.toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /sending messages too quickly/i }),
+    ).not.toBeVisible();
   });
 });

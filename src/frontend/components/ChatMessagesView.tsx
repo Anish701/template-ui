@@ -27,6 +27,7 @@ import { ArtifactViewer } from "./ArtifactViewer";
 import { TodoStrip } from "./TodoStrip";
 import { FeedbackButtons } from "./FeedbackButtons";
 import { CustomDataRenderer } from "./CustomDataRenderer";
+import type { StreamErrorKind } from "../utils/errorHandler";
 
 function extractMessageText(content: unknown): string {
   if (typeof content === 'string') return content;
@@ -718,6 +719,10 @@ interface ChatMessagesViewProps {
   historicalActivities: Record<string, ProcessedEvent[]>;
   isRateLimited?: boolean;
   rateLimitRemainingSeconds?: number;
+  /** User-friendly streaming error message (already translated from raw error). */
+  streamingError?: string | null;
+  /** Semantic error kind — controls which action button is shown. */
+  streamingErrorKind?: StreamErrorKind | null;
   mcpEvents?: Array<{ tool: string; status: string; timestamp: number }>;
   chatId: string;
   traceId: string | null;
@@ -747,6 +752,8 @@ export function ChatMessagesView({
   onNewChat,
   isRateLimited = false,
   rateLimitRemainingSeconds = 0,
+  streamingError = null,
+  streamingErrorKind = null,
   mcpEvents = [],
   chatId,
   traceId,
@@ -781,6 +788,9 @@ export function ChatMessagesView({
 
   const lastMessage = messages[messages.length - 1];
   const rawNoResponse = !isLoading && !pendingInterrupt && !interruptContent && messages.length > 0 && lastMessage?.type === 'human';
+  // Also show the error block when a stream error occurred, regardless of last message type
+  // (e.g. a mid-response drop leaves a partial AI bubble — rawNoResponse would be false)
+  const showStreamError = !!streamingError && !isLoading && !pendingInterrupt && !interruptContent;
   const [showNoResponse, setShowNoResponse] = useState(false);
 
   useEffect(() => {
@@ -933,24 +943,35 @@ export function ChatMessagesView({
             </div>
           )}
 
-          {showNoResponse && (
+          {(showNoResponse || showStreamError) && (
             <div className="flex items-start gap-3 animate-fadeIn">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
                 <AlertCircle className="w-4 h-4 text-destructive" />
               </div>
               <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 shadow-card">
                 <p className="text-sm text-muted-foreground mb-2">
-                  The agent didn&apos;t respond. This could be a temporary issue.
+                  {streamingError ??
+                    'The agent didn\u2019t respond. This could be a temporary issue.'}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => onRetry?.()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                  aria-label="Retry operation"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  Retry
-                </button>
+                {streamingErrorKind === 'auth' ? (
+                  <a
+                    href={`/auth/login?redirect=${encodeURIComponent((globalThis.location?.pathname ?? '/') + (globalThis.location?.search ?? '') + (globalThis.location?.hash ?? ''))}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                    aria-label="Sign in to continue"
+                  >
+                    Sign In
+                  </a>
+                ) : streamingErrorKind !== 'rate_limited' ? (
+                  <button
+                    type="button"
+                    onClick={() => onRetry?.()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                    aria-label="Retry operation"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Retry
+                  </button>
+                ) : null}
               </div>
             </div>
           )}

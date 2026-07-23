@@ -11,14 +11,14 @@ export function ReconnectingBanner({ streamingState, maxRetries }: ReconnectingB
     return null;
   }
 
-  const attemptText = `Attempt ${streamingState.reconnectAttempt}/${maxRetries}`;
-  const midResponseWarning = streamingState.streamDroppedMidResponse
-    ? ' Stream dropped mid-response. Resuming from last received event.'
+  const attemptText = `Reconnecting… attempt ${streamingState.reconnectAttempt} of ${maxRetries}.`;
+  const midResponseNote = streamingState.streamDroppedMidResponse
+    ? ' The connection was briefly interrupted — we\'ll pick up where we left off.'
     : '';
 
   return (
-    <Alert variant="warning" isInline title="Reconnecting...">
-      {attemptText}{midResponseWarning ? '.' : ''}{midResponseWarning}
+    <Alert variant="warning" isInline title="Connection lost — trying to reconnect">
+      {attemptText}{midResponseNote}
     </Alert>
   );
 }

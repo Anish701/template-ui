@@ -484,6 +484,8 @@ export function ChatPage({ threadId }: { threadId: string }) {
             historicalActivities={historicalActivities}
             isRateLimited={rateLimit.isRateLimited}
             rateLimitRemainingSeconds={rateLimit.retryAfterSeconds}
+            streamingError={streamingState.error}
+            streamingErrorKind={streamingState.errorKind}
             mcpEvents={thread.mcpEvents}
             chatId={threadId}
             traceId={thread.traceId}

@@ -52,7 +52,7 @@ export const InputForm = forwardRef<HTMLTextAreaElement, InputFormProps>(functio
         <Alert
           variant="warning"
           isInline
-          title={`Rate limited. Try again in ${rateLimitRemainingSeconds}s`}
+          title="You're sending messages too quickly. Please wait a moment before trying again."
           className="mb-1"
         />
       )}
