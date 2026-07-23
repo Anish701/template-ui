@@ -59,7 +59,9 @@ test.describe('Rate limit — 429 handling', () => {
   // ── Retry-After respected ──────────────────────────────────────────────────
 
   test('shows the Retry-After seconds in the wait button', async ({ page }) => {
-    await mockRateLimitResponse(page, 10);
+    // Use a long rate-limit (60s) so the countdown does not expire before
+    // all stream retries are exhausted and isLoading transitions to false.
+    await mockRateLimitResponse(page, 60);
 
     const home = new HomePage(page);
     await home.goto();
@@ -68,9 +70,15 @@ test.describe('Rate limit — 429 handling', () => {
     const chat = new ChatPage(page);
     await chat.expectChatRoute();
 
-    // Once the stream finishes (loading ends) the wait button appears with the countdown
+    // Wait for the rate-limit alert to appear first (streaming is still in-flight)
+    await expect(
+      page.getByRole('heading', { name: /sending messages too quickly/i }),
+    ).toBeVisible({ timeout: 15_000 });
+
+    // After all retries exhaust the cancel button disappears and the wait button appears.
+    // Timeout is generous to allow the full retry back-off (3 attempts ≈ 7–14 s).
     await expect(page.getByRole('button', { name: /wait \d+ seconds/i })).toBeVisible({
-      timeout: 15_000,
+      timeout: 20_000,
     });
   });
 
