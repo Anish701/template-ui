@@ -11,14 +11,22 @@ export function ReconnectingBanner({ streamingState, maxRetries }: ReconnectingB
     return null;
   }
 
-  const attemptText = `Attempt ${streamingState.reconnectAttempt}/${maxRetries}`;
-  const midResponseWarning = streamingState.streamDroppedMidResponse
-    ? ' Stream dropped mid-response. Resuming from last received event.'
-    : '';
+  const attempt = streamingState.reconnectAttempt ?? 0;
+  const isLastAttempt = attempt >= maxRetries;
+
+  const title = isLastAttempt
+    ? 'Having trouble connecting…'
+    : 'Reconnecting…';
+
+  const body = streamingState.streamDroppedMidResponse
+    ? 'The connection was interrupted mid-response. Picking up where we left off…'
+    : isLastAttempt
+      ? 'Still trying to reach the agent. This may take a moment.'
+      : 'Lost connection to the agent. Trying again automatically…';
 
   return (
-    <Alert variant="warning" isInline title="Reconnecting...">
-      {attemptText}{midResponseWarning ? '.' : ''}{midResponseWarning}
+    <Alert variant="warning" isInline title={title}>
+      {body}
     </Alert>
   );
 }

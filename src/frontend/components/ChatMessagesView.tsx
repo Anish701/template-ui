@@ -27,6 +27,7 @@ import { ArtifactViewer } from "./ArtifactViewer";
 import { TodoStrip } from "./TodoStrip";
 import { FeedbackButtons } from "./FeedbackButtons";
 import { CustomDataRenderer } from "./CustomDataRenderer";
+import { ChatInlineError } from "./ChatInlineError";
 
 function extractMessageText(content: unknown): string {
   if (typeof content === 'string') return content;
@@ -731,6 +732,8 @@ interface ChatMessagesViewProps {
   chatInputRef?: React.RefObject<HTMLTextAreaElement | null>;
   onExportMarkdown?: () => void;
   onExportJson?: () => void;
+  /** Raw error string from the streaming layer; triggers an inline error bubble. */
+  streamError?: string | null;
 }
 
 export function ChatMessagesView({
@@ -757,6 +760,7 @@ export function ChatMessagesView({
   chatInputRef,
   onExportMarkdown,
   onExportJson,
+  streamError = null,
 }: ChatMessagesViewProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
@@ -780,7 +784,14 @@ export function ChatMessagesView({
   }, [messages]);
 
   const lastMessage = messages[messages.length - 1];
-  const rawNoResponse = !isLoading && !pendingInterrupt && !interruptContent && messages.length > 0 && lastMessage?.type === 'human';
+  // Only show "no response" nudge when there is no stream error covering the same situation.
+  const rawNoResponse =
+    !isLoading &&
+    !pendingInterrupt &&
+    !interruptContent &&
+    !streamError &&
+    messages.length > 0 &&
+    lastMessage?.type === 'human';
   const [showNoResponse, setShowNoResponse] = useState(false);
 
   useEffect(() => {
@@ -953,6 +964,12 @@ export function ChatMessagesView({
                 </button>
               </div>
             </div>
+          )}
+          {streamError && !isLoading && (
+            <ChatInlineError
+              rawError={streamError}
+              onRetry={onRetry}
+            />
           )}
           {interruptContent}
           <div ref={bottomRef} />

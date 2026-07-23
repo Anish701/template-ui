@@ -500,6 +500,7 @@ export function ChatPage({ threadId }: { threadId: string }) {
             chatInputRef={chatInputRef}
             onExportMarkdown={handleExportMarkdown}
             onExportJson={handleExportJson}
+            streamError={streamingState.error ?? null}
           />
         </div>
         {debugMode && (

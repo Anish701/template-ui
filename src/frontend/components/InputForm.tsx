@@ -52,9 +52,11 @@ export const InputForm = forwardRef<HTMLTextAreaElement, InputFormProps>(functio
         <Alert
           variant="warning"
           isInline
-          title={`Rate limited. Try again in ${rateLimitRemainingSeconds}s`}
+          title="You've sent too many messages"
           className="mb-1"
-        />
+        >
+          {`Please wait ${rateLimitRemainingSeconds} second${rateLimitRemainingSeconds === 1 ? '' : 's'} before sending another message.`}
+        </Alert>
       )}
       <div className="relative rounded-2xl border border-border bg-card shadow-card focus-within:border-primary/40 focus-within:shadow-elevated transition-all duration-200">
         <textarea
@@ -85,7 +87,7 @@ export const InputForm = forwardRef<HTMLTextAreaElement, InputFormProps>(functio
               disabled={isSubmitDisabled}
               aria-label={
                 isRateLimited
-                  ? `Wait ${rateLimitRemainingSeconds} seconds`
+                  ? `Please wait ${rateLimitRemainingSeconds} second${rateLimitRemainingSeconds === 1 ? '' : 's'} before sending`
                   : "Send message"
               }
               className={`flex items-center justify-center rounded-full transition-all duration-200 ${
@@ -98,7 +100,7 @@ export const InputForm = forwardRef<HTMLTextAreaElement, InputFormProps>(functio
             >
               {isRateLimited ? (
                 <span className="text-xs font-medium tabular-nums">
-                  Wait ({rateLimitRemainingSeconds}s)
+                  Wait {rateLimitRemainingSeconds}s
                 </span>
               ) : (
                 <ArrowUp className="h-4 w-4" />
