@@ -61,9 +61,7 @@ export class ErrorHandler {
         message = 'Service unavailable';
         break;
       default:
-        code = status >= 400 && status < 500
-          ? ErrorCode.VALIDATION_ERROR
-          : ErrorCode.UNKNOWN_ERROR;
+        code = ErrorCode.UNKNOWN_ERROR;
         message = body || 'Request failed';
     }
 

@@ -1,3 +1,4 @@
+import type React from 'react';
 import { AlertCircle, RefreshCw, LogIn, Clock, RotateCcw } from 'lucide-react';
 import { ErrorCode } from '../types/errors';
 import { ErrorHandler } from '../utils/errorHandler';
