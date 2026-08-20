@@ -37,6 +37,10 @@ jobs:
         with:
           persist-credentials: false
 
+      # GHCR requires the repository path to be lowercase (e.g. anish701/template-ui).
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
@@ -57,7 +61,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
@@ -184,7 +188,7 @@ jobs:
       - name: Verify pushed image is pullable
         if: github.event_name != 'pull_request'
         run: |
-          docker pull ghcr.io/${{ github.repository }}@${{ steps.push.outputs.digest }}
+          docker pull ${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
           echo "Image pull verified successfully"
 
       - name: Sign image with cosign
@@ -194,7 +198,7 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             if cosign sign --yes --recursive \
-              ghcr.io/${{ github.repository }}@${{ steps.push.outputs.digest }}; then
+              ${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}; then
               echo "signed=true" >> $GITHUB_OUTPUT
               exit 0
             fi
@@ -211,7 +215,7 @@ jobs:
           cosign verify \
             --certificate-identity-regexp="https://github.com/${{ github.repository }}/" \
             --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
-            ghcr.io/${{ github.repository }}@${{ steps.push.outputs.digest }}
+            ${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
           echo "Signature verification passed"
 
       - name: Attest build provenance
@@ -219,7 +223,7 @@ jobs:
         continue-on-error: true
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
         with:
-          subject-name: ghcr.io/${{ github.repository }}
+          subject-name: ${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
@@ -232,7 +236,7 @@ jobs:
             "git_ref": "${{ github.ref }}",
             "git_sha": "${{ github.sha }}",
             "build_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "container_image": "ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}",
+            "container_image": "${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}",
             "container_digest": "${{ steps.push.outputs.digest }}",
             "signed": ${{ steps.sign.outputs.signed || false }},
             "repository": "${{ github.repository }}"
@@ -244,7 +248,7 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          IMAGE="ghcr.io/${{ github.repository }}"
+          IMAGE="${{ env.IMAGE_NAME }}"
           cd deployment/overlays/openshift
           kustomize edit set image template-ui=${IMAGE}:${VERSION}
           echo "Stamped image ${IMAGE}:${VERSION} into deployment/overlays/openshift/kustomization.yaml"
@@ -292,7 +296,7 @@ jobs:
             ## Container Image
 
             ```bash
-            docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+            docker pull ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
             ```
 
             **Digest:** `${{ steps.push.outputs.digest }}`
@@ -305,11 +309,11 @@ jobs:
             cosign verify \
               --certificate-identity-regexp="https://github.com/${{ github.repository }}/" \
               --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
-              ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+              ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
 
             # Verify build provenance
             gh attestation verify \
-              oci://ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }} \
+              oci://${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }} \
               --owner ${{ github.repository_owner }}
 
             # Verify artifact checksums
@@ -355,7 +359,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Pull command:**" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ghcr.io/${{ github.repository }}@${{ steps.push.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Verify signature:**" >> $GITHUB_STEP_SUMMARY
@@ -363,5 +367,5 @@ jobs:
           echo 'cosign verify \' >> $GITHUB_STEP_SUMMARY
           echo '  --certificate-identity-regexp="https://github.com/${{ github.repository }}/" \' >> $GITHUB_STEP_SUMMARY
           echo '  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \' >> $GITHUB_STEP_SUMMARY
-          echo '  ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}' >> $GITHUB_STEP_SUMMARY
+          echo '  ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
